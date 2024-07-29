@@ -33,7 +33,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef tim1Handle;
+TIM_HandleTypeDef tim1MeasureHandle;
+TIM_HandleTypeDef tim16DisplayHandle;
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -52,7 +53,8 @@ int main(void)
   APP_SystemClockConfig(); 
 	
 	gpioInit();
-	timerInit();
+	timerDisplayInit();
+	//timerMeasureInit();
   
   /* Infinite loop */
   while (1)
@@ -76,35 +78,88 @@ void gpioInit(void)
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
 }
 
-void timerInit(void)
+
+void timerMeasureInit(void)
 {
 	/* 	Trigger 4x per second, or every 250ms
 			Clock at 24MHz -> 24 million cycles
 			Period to 10,000, prescaler to 800
 			10,000*800=8,000,000 */
 	
-	tim1Handle.Instance = TIM16;																						//Timer 1 advanced timer
-  tim1Handle.Init.Period            = 100 - 1;												//Timer count = (period+1)*(prescaler+1)
-  tim1Handle.Init.Prescaler         = 24 - 1;
-  tim1Handle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
-  tim1Handle.Init.CounterMode       = TIM_COUNTERMODE_UP;
-  tim1Handle.Init.RepetitionCounter = 1 - 1;
-  tim1Handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	TIM_IC_InitTypeDef periodChannelHandler;
+	TIM_IC_InitTypeDef dutyChannelHandler;
 	
-  if (HAL_TIM_Base_Init(&tim1Handle) != HAL_OK)
+	tim1MeasureHandle.Instance = TIM1;																						//Timer 1 advanced timer
+  tim1MeasureHandle.Init.Period            = 100 - 1;														//Timer count = (period+1)*(prescaler+1)
+  tim1MeasureHandle.Init.Prescaler         = 24 - 1;
+  tim1MeasureHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
+  tim1MeasureHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  tim1MeasureHandle.Init.RepetitionCounter = 1 - 1;
+  tim1MeasureHandle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	
+  if (HAL_TIM_IC_Init(&tim1MeasureHandle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+	
+	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &periodChannelHandler, TIM_CHANNEL_1) != HAL_OK)
   {
     APP_ErrorHandler();
   }
 
-  if (HAL_TIM_Base_Start_IT(&tim1Handle) != HAL_OK)
+	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &dutyChannelHandler, TIM_CHANNEL_2) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+	
+  if (HAL_TIM_IC_Start_IT(&tim1MeasureHandle, TIM_CHANNEL_1) != HAL_OK)
   {
     APP_ErrorHandler();
   }
 }
 
+void timerDisplayInit(void)
+{
+	/* 	Trigger 4x per second, or every 250ms
+			Clock at 24MHz -> 24 million cycles
+			Period to 10,000, prescaler to 800
+			10,000*800=8,000,000 */
+	
+	tim16DisplayHandle.Instance = TIM16;																						//Timer 1 advanced timer
+  tim16DisplayHandle.Init.Period            = 100 - 1;												//Timer count = (period+1)*(prescaler+1)
+  tim16DisplayHandle.Init.Prescaler         = 24 - 1;
+  tim16DisplayHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
+  tim16DisplayHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  tim16DisplayHandle.Init.RepetitionCounter = 1 - 1;
+  tim16DisplayHandle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	
+  if (HAL_TIM_Base_Init(&tim16DisplayHandle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+	
+  /* Set the OPM Bit */
+  tim16DisplayHandle.Instance->CR1 |= TIM_CR1_OPM;
+	
+  if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+}
+
+void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
+{
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+	  
+  if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
 }
 
 /**

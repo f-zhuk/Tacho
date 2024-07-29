@@ -90,9 +90,14 @@ void SysTick_Handler(void)
 /* please refer to the startup file.                                          */
 /******************************************************************************/
 
+void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&tim1MeasureHandle);
+}
+
 void TIM16_IRQHandler(void)
 {
-  HAL_TIM_IRQHandler(&tim1Handle);
+  HAL_TIM_IRQHandler(&tim16DisplayHandle);
 }
 
 
