@@ -48,4 +48,11 @@ void HAL_MspInit(void)
   __HAL_RCC_PWR_CLK_ENABLE();
 }
 
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
+{
+  __HAL_RCC_TIM16_CLK_ENABLE();                          /* ??TIM1?? */
+  HAL_NVIC_SetPriority(TIM16_IRQn, 0, 0); /* ??????? */
+  HAL_NVIC_EnableIRQ(TIM16_IRQn);         /* ??TIM1?? */
+}
+
 /************************ (C) COPYRIGHT Puya *****END OF FILE******************/

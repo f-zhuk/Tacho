@@ -33,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef tim1Handle;
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -51,6 +52,7 @@ int main(void)
   APP_SystemClockConfig(); 
 	
 	gpioInit();
+	timerInit();
   
   /* Infinite loop */
   while (1)
@@ -71,7 +73,38 @@ void gpioInit(void)
 
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
+}
+
+void timerInit(void)
+{
+	/* 	Trigger 4x per second, or every 250ms
+			Clock at 24MHz -> 24 million cycles
+			Period to 10,000, prescaler to 800
+			10,000*800=8,000,000 */
+	
+	tim1Handle.Instance = TIM16;																						//Timer 1 advanced timer
+  tim1Handle.Init.Period            = 100 - 1;												//Timer count = (period+1)*(prescaler+1)
+  tim1Handle.Init.Prescaler         = 24 - 1;
+  tim1Handle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
+  tim1Handle.Init.CounterMode       = TIM_COUNTERMODE_UP;
+  tim1Handle.Init.RepetitionCounter = 1 - 1;
+  tim1Handle.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	
+  if (HAL_TIM_Base_Init(&tim1Handle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+
+  if (HAL_TIM_Base_Start_IT(&tim1Handle) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
 }
 
 /**
@@ -88,7 +121,7 @@ static void APP_SystemClockConfig(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_LSI; /* Select oscillators HSE,HSI,LSI */
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;                          /* Enable HSI */
   RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;                          /* HSI not divided */
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_8MHz;  /* Configure HSI clock as 8MHz */
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_24MHz;  /* Configure HSI clock as 24MHz */
   RCC_OscInitStruct.HSEState = RCC_HSE_OFF;                         /* Disable HSE */
   /*RCC_OscInitStruct.HSEFreq = RCC_HSE_16_24MHz;*/
   RCC_OscInitStruct.LSIState = RCC_LSI_OFF;                         /* Disable LSI */

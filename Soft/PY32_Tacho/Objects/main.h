@@ -43,9 +43,11 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
 /* Exported variables prototypes ---------------------------------------------*/
+extern TIM_HandleTypeDef tim1Handle;
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_ErrorHandler(void);
 void gpioInit(void);
+void timerInit(void);
 
 #ifdef __cplusplus
 }

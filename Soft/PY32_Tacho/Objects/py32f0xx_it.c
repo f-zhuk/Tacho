@@ -90,4 +90,10 @@ void SysTick_Handler(void)
 /* please refer to the startup file.                                          */
 /******************************************************************************/
 
+void TIM16_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&tim1Handle);
+}
+
+
 /************************ (C) COPYRIGHT Puya *****END OF FILE******************/
