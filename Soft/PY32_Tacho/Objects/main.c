@@ -59,6 +59,10 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
+		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+		else			
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);
   }
 }
 
@@ -74,8 +78,16 @@ void gpioInit(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  
+  GPIO_InitStruct.Pin = GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
 }
 
 
@@ -154,7 +166,7 @@ void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	  
   if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
   {

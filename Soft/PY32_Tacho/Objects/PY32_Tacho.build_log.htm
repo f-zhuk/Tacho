@@ -27,20 +27,20 @@ Project File Date:  07/27/2024
 <h2>Output:</h2>
 *** Using Compiler 'V6.22', folder: 'C:\Users\Fedor\AppData\Local\Keil_v5\ARM\ARMCLANG\Bin'
 Rebuild target 'Target 1'
-compiling py32f0xx_it.c...
-Objects/main.c(150): warning: unused parameter 'htim' [-Wunused-parameter]
-  150 | void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
-      |                                                 ^
-Objects/main.c(155): warning: unused parameter 'htim' [-Wunused-parameter]
-  155 | void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-      |                                                       ^
-2 warnings generated.
-compiling main.c...
 Objects/py32f0xx_hal_msp.c(51): warning: unused parameter 'htim' [-Wunused-parameter]
    51 | void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
       |                                              ^
 1 warning generated.
 compiling py32f0xx_hal_msp.c...
+Objects/main.c(162): warning: unused parameter 'htim' [-Wunused-parameter]
+  162 | void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
+      |                                                 ^
+Objects/main.c(167): warning: unused parameter 'htim' [-Wunused-parameter]
+  167 | void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+      |                                                       ^
+2 warnings generated.
+compiling main.c...
+compiling py32f0xx_it.c...
 compiling py32f0xx_hal.c...
 compiling py32f0xx_hal_adc.c...
 compiling py32f0xx_hal_comp.c...
@@ -78,10 +78,10 @@ compiling py32f0xx_hal_tim_ex.c...
 compiling py32f0xx_hal_tim.c...
 compiling py32f0xx_hal_usart.c...
 compiling py32f0xx_hal_wwdg.c...
-assembling startup_py32f002ax5.s...
 compiling system_py32f0xx.c...
+assembling startup_py32f002ax5.s...
 linking...
-Program Size: Code=5304 RO-data=308 RW-data=204 ZI-data=1192  
+Program Size: Code=5428 RO-data=308 RW-data=204 ZI-data=1192  
 ".\Objects\PY32_Tacho.axf" - 0 Error(s), 6 Warning(s).
 
 <h2>Software Packages used:</h2>
@@ -108,10 +108,10 @@ Package Vendor: Puya
    * Component: ARM::CMSIS:CORE@6.1.0
 
    * Component: Puya::Device:Startup@1.0.0
+      Source file:   Drivers/CMSIS/Device/PY32F0xx/Source/system_py32f0xx.c
       Source file:   Drivers/CMSIS/Device/PY32F0xx/Source/arm/startup_py32f002ax5.s
       Include file:  Drivers/CMSIS/Device/PY32F0xx/Include/py32f0xx.h
-      Source file:   Drivers/CMSIS/Device/PY32F0xx/Source/system_py32f0xx.c
-Build Time Elapsed:  00:00:06
+Build Time Elapsed:  00:00:09
 </pre>
 </body>
 </html>
