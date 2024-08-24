@@ -14,4 +14,5 @@
   ..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_flash.h \
   ..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_pwr.h \
   ..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim.h \
-  ..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim_ex.h
+  ..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim_ex.h \
+  Objects\TachoFont.h

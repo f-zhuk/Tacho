@@ -35,6 +35,7 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef tim1MeasureHandle;
 TIM_HandleTypeDef tim16DisplayHandle;
+//const uint8_t TachoFont[480];
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -54,15 +55,15 @@ int main(void)
 	
 	gpioInit();
 	timerDisplayInit();
-	//timerMeasureInit();
+	timerMeasureInit();
   
   /* Infinite loop */
   while (1)
   {
 		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
 		else			
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
   }
 }
 
@@ -97,12 +98,12 @@ void timerMeasureInit(void)
 			Clock at 24MHz -> 24 million cycles
 			Period to 10,000, prescaler to 800
 			10,000*800=8,000,000 */
-	
+	TIM_SlaveConfigTypeDef tim1SlaveHandler;
 	TIM_IC_InitTypeDef periodChannelHandler;
 	TIM_IC_InitTypeDef dutyChannelHandler;
 	
 	tim1MeasureHandle.Instance = TIM1;																						//Timer 1 advanced timer
-  tim1MeasureHandle.Init.Period            = 100 - 1;														//Timer count = (period+1)*(prescaler+1)
+  tim1MeasureHandle.Init.Period            = 1000 - 1;														//Timer count = (period+1)*(prescaler+1)
   tim1MeasureHandle.Init.Prescaler         = 24 - 1;
   tim1MeasureHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
   tim1MeasureHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
@@ -114,11 +115,23 @@ void timerMeasureInit(void)
     APP_ErrorHandler();
   }
 	
+	tim1SlaveHandler.SlaveMode = TIM_SLAVEMODE_RESET;
+	tim1SlaveHandler.InputTrigger = TIM_TS_TI1FP1;
+	tim1SlaveHandler.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+	if (HAL_TIM_SlaveConfigSynchro_IT(&tim1MeasureHandle, &tim1SlaveHandler) != HAL_OK)
+  {
+    APP_ErrorHandler();
+  }
+	
+	periodChannelHandler.ICPolarity = TIM_ICPOLARITY_RISING;
+	periodChannelHandler.ICSelection = TIM_ICSELECTION_DIRECTTI;
 	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &periodChannelHandler, TIM_CHANNEL_1) != HAL_OK)
   {
     APP_ErrorHandler();
   }
 
+	dutyChannelHandler.ICPolarity = TIM_ICPOLARITY_FALLING;
+	dutyChannelHandler.ICSelection = TIM_ICSELECTION_INDIRECTTI;
 	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &dutyChannelHandler, TIM_CHANNEL_2) != HAL_OK)
   {
     APP_ErrorHandler();
@@ -162,11 +175,16 @@ void timerDisplayInit(void)
 void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+	HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
+  static uint16_t counter = 0;
+	HAL_GPIO_WritePin(GPIOA, counter/*TachoFont[counter]*/, GPIO_PIN_SET);
+	counter++;
+	if( counter > 60) counter = 0;
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3);
 	  
   if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
   {

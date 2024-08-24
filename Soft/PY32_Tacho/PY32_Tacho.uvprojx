@@ -414,6 +414,16 @@
               <FileType>5</FileType>
               <FilePath>.\Objects\py32f0xx_it.h</FilePath>
             </File>
+            <File>
+              <FileName>TachoFont.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Objects\TachoFont.c</FilePath>
+            </File>
+            <File>
+              <FileName>TachoFont.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\Objects\TachoFont.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -2,6 +2,7 @@
 ".\objects\main.o"
 ".\objects\py32f0xx_hal_msp.o"
 ".\objects\py32f0xx_it.o"
+".\objects\tachofont.o"
 ".\objects\py32f0xx_hal.o"
 ".\objects\py32f0xx_hal_adc.o"
 ".\objects\py32f0xx_hal_comp.o"
