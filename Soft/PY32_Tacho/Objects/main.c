@@ -41,6 +41,15 @@ TIM_HandleTypeDef tim16DisplayHandle;
 /* Private function prototypes -----------------------------------------------*/
 static void APP_SystemClockConfig(void);
 
+const uint8_t Font[30] = {
+        0x1F, 0x1F, 0x1F, 0x1F, 0x1F,            // Code for char  
+        0x1F, 0x1F, 0x02, 0x1F, 0x1F,            // Code for char !
+        0x1F, 0x07, 0x1F, 0x07, 0x1F,            // Code for char "
+        0x15, 0x00, 0x15, 0x00, 0x15,            // Code for char #
+        0x0D, 0x0A, 0x00, 0x0A, 0x16,            // Code for char $
+        0x0C, 0x14, 0x1B, 0x05, 0x06             // Code for char %
+};
+
 /**
   * @brief  Main program.
   * @retval int
@@ -60,10 +69,10 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-		if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
-		else			
-			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+		//if(HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_8))
+		//	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+		//else			
+		//	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
   }
 }
 
@@ -81,9 +90,10 @@ void gpioInit(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
   
   GPIO_InitStruct.Pin = GPIO_PIN_8;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;//GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
 
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -152,7 +162,7 @@ void timerDisplayInit(void)
 	
 	tim16DisplayHandle.Instance = TIM16;																						//Timer 1 advanced timer
   tim16DisplayHandle.Init.Period            = 100 - 1;												//Timer count = (period+1)*(prescaler+1)
-  tim16DisplayHandle.Init.Prescaler         = 24 - 1;
+  tim16DisplayHandle.Init.Prescaler         = 8 - 1;
   tim16DisplayHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
   tim16DisplayHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
   tim16DisplayHandle.Init.RepetitionCounter = 1 - 1;
@@ -166,30 +176,40 @@ void timerDisplayInit(void)
   /* Set the OPM Bit */
   tim16DisplayHandle.Instance->CR1 |= TIM_CR1_OPM;
 	
-  if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
-  {
-    APP_ErrorHandler();
-  }
+  //if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
+  //{
+  //  APP_ErrorHandler();
+  //}
 }
 
 void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 {
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1);
+	if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)  { APP_ErrorHandler(); }
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   static uint16_t counter = 0;
-	HAL_GPIO_WritePin(GPIOA, counter/*TachoFont[counter]*/, GPIO_PIN_SET);
-	counter++;
-	if( counter > 60) counter = 0;
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3);
-	  
-  if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)
-  {
-    APP_ErrorHandler();
-  }
+	//HAL_GPIO_WritePin(GPIOA, /*counter*/TachoFont[counter], GPIO_PIN_SET);
+	//counter++;
+	//if( counter > 60) counter = 0;
+	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);//|GPIO_PIN_2|GPIO_PIN_3);
+	
+	if( counter < 30)
+	{
+		GPIOA->ODR = (GPIOA->ODR&(~0x1F))|TachoFont[counter+96];
+		//HAL_GPIO_WritePin(GPIOA, 0x1F, GPIO_PIN_RESET);
+		//HAL_GPIO_WritePin(GPIOA, /*counterTacho*/Font[counter], GPIO_PIN_SET);
+		counter++;
+		if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK) { APP_ErrorHandler(); }
+	}
+	else 
+	{
+		GPIOA->ODR |= 0x1F;
+		counter = 0;
+	}
 }
 
 /**
