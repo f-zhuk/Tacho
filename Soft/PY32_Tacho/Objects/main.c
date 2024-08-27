@@ -113,8 +113,8 @@ void timerMeasureInit(void)
 	TIM_IC_InitTypeDef dutyChannelHandler;
 	
 	tim1MeasureHandle.Instance = TIM1;																						//Timer 1 advanced timer
-  tim1MeasureHandle.Init.Period            = 1000 - 1;														//Timer count = (period+1)*(prescaler+1)
-  tim1MeasureHandle.Init.Prescaler         = 24 - 1;
+  tim1MeasureHandle.Init.Period            = 50000 - 1;														//Timer count = (period+1)*(prescaler+1)
+  tim1MeasureHandle.Init.Prescaler         = 16 - 1;
   tim1MeasureHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
   tim1MeasureHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
   tim1MeasureHandle.Init.RepetitionCounter = 1 - 1;
@@ -127,20 +127,20 @@ void timerMeasureInit(void)
 	
 	tim1SlaveHandler.SlaveMode = TIM_SLAVEMODE_RESET;
 	tim1SlaveHandler.InputTrigger = TIM_TS_TI1FP1;
-	tim1SlaveHandler.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+	tim1SlaveHandler.TriggerPolarity = TIM_TRIGGERPOLARITY_FALLING;
 	if (HAL_TIM_SlaveConfigSynchro_IT(&tim1MeasureHandle, &tim1SlaveHandler) != HAL_OK)
   {
     APP_ErrorHandler();
   }
 	
-	periodChannelHandler.ICPolarity = TIM_ICPOLARITY_RISING;
+	periodChannelHandler.ICPolarity = TIM_ICPOLARITY_FALLING;
 	periodChannelHandler.ICSelection = TIM_ICSELECTION_DIRECTTI;
 	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &periodChannelHandler, TIM_CHANNEL_1) != HAL_OK)
   {
     APP_ErrorHandler();
   }
 
-	dutyChannelHandler.ICPolarity = TIM_ICPOLARITY_FALLING;
+	dutyChannelHandler.ICPolarity = TIM_ICPOLARITY_RISING;
 	dutyChannelHandler.ICSelection = TIM_ICSELECTION_INDIRECTTI;
 	if (HAL_TIM_IC_ConfigChannel(&tim1MeasureHandle, &dutyChannelHandler, TIM_CHANNEL_2) != HAL_OK)
   {
@@ -161,8 +161,8 @@ void timerDisplayInit(void)
 			10,000*800=8,000,000 */
 	
 	tim16DisplayHandle.Instance = TIM16;																						//Timer 1 advanced timer
-  tim16DisplayHandle.Init.Period            = 100 - 1;												//Timer count = (period+1)*(prescaler+1)
-  tim16DisplayHandle.Init.Prescaler         = 8 - 1;
+  tim16DisplayHandle.Init.Period            = 800 - 1;												//Timer count = (period+1)*(prescaler+1)
+  tim16DisplayHandle.Init.Prescaler         = 0;
   tim16DisplayHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
   tim16DisplayHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
   tim16DisplayHandle.Init.RepetitionCounter = 1 - 1;
@@ -185,8 +185,13 @@ void timerDisplayInit(void)
 void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 {
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1);
-	if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)  { APP_ErrorHandler(); }
+	//static uint16_t prev_duty = 0;
+	//uint16_t curr_duty = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1)>>3;
+	//if (curr_duty == prev_duty)
+	//{
+		if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)  { APP_ErrorHandler(); }
+	//}
+	//prev_duty = curr_duty;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)

@@ -6,11 +6,10 @@
 //MikroeElektronika 2011 
 //http://www.mikroe.com 
 
-//GLCD FontName : TachoFont
+//GLCD FontName : TachoFont6x5
 //GLCD FontSize : 6 x 5
 
-#include "stdint.h"
-const uint8_t TachoFont[576] = {
+const unsigned short TachoFont6x5[] = {
         0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F,      // Code for char  
         0x1F, 0x1F, 0x08, 0x1F, 0x1F, 0x1F,      // Code for char !
         0x1F, 0x1C, 0x1F, 0x1C, 0x1F, 0x1F,      // Code for char "
