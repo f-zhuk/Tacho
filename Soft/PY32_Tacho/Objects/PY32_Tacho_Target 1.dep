@@ -1,7 +1,7 @@
 Dependencies for Project 'PY32_Tacho', Target 'Target 1': (DO NOT MODIFY !)
 CompilerVersion: 6220000::V6.22::ARMCLANG
-F (.\Objects\main.c)(0x66CDA905)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m0plus -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ./Objects -I ../PY32F0xx_Firmware-master/PY32F0xx_Firmware-master/Drivers/PY32F0xx_HAL_Driver/Inc-I./RTE/_Target_1-IC:/Users/Fedor/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include-IC:/Users/Fedor/AppData/Local/Arm/Packs/Puya/PY32F0xx_DFP/1.2.1/Drivers/CMSIS/Device/PY32F0xx/Include-D__UVISION_VERSION="540" -D_RTE_ -DPY32F002Ax5-o ./objects/main.o -MMD)
-I (Objects\main.h)(0x66C23D22)
+F (.\Objects\main.c)(0x66CDEE02)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m0plus -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ./Objects -I ../PY32F0xx_Firmware-master/PY32F0xx_Firmware-master/Drivers/PY32F0xx_HAL_Driver/Inc-I./RTE/_Target_1-IC:/Users/Fedor/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include-IC:/Users/Fedor/AppData/Local/Arm/Packs/Puya/PY32F0xx_DFP/1.2.1/Drivers/CMSIS/Device/PY32F0xx/Include-D__UVISION_VERSION="540" -D_RTE_ -DPY32F002Ax5-o ./objects/main.o -MMD)
+I (Objects\main.h)(0x66CDB83F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal.h)(0x66A43EA7)
 I (Objects\py32f0xx_hal_conf.h)(0x66A7E59F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_rcc.h)(0x66A43EA7)
@@ -19,10 +19,10 @@ I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Dri
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim.h)(0x66A814D7)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim_ex.h)(0x66A43EA7)
 I (Objects\TachoFont.h)(0x66C23D22)
-F (.\Objects\main.h)(0x66C23D22)()
+F (.\Objects\main.h)(0x66CDB83F)()
 F (.\Objects\py32f0xx_hal_conf.h)(0x66A7E59F)()
 F (.\Objects\py32f0xx_hal_msp.c)(0x66A7FCA7)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m0plus -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ./Objects -I ../PY32F0xx_Firmware-master/PY32F0xx_Firmware-master/Drivers/PY32F0xx_HAL_Driver/Inc-I./RTE/_Target_1-IC:/Users/Fedor/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include-IC:/Users/Fedor/AppData/Local/Arm/Packs/Puya/PY32F0xx_DFP/1.2.1/Drivers/CMSIS/Device/PY32F0xx/Include-D__UVISION_VERSION="540" -D_RTE_ -DPY32F002Ax5-o ./objects/py32f0xx_hal_msp.o -MMD)
-I (Objects\main.h)(0x66C23D22)
+I (Objects\main.h)(0x66CDB83F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal.h)(0x66A43EA7)
 I (Objects\py32f0xx_hal_conf.h)(0x66A7E59F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_rcc.h)(0x66A43EA7)
@@ -41,7 +41,7 @@ I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Dri
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_tim_ex.h)(0x66A43EA7)
 I (Objects\TachoFont.h)(0x66C23D22)
 F (.\Objects\py32f0xx_it.c)(0x66A8225F)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m0plus -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-D__EVAL -gdwarf-4 -O0 -ffunction-sections -Wall -Wextra -Wno-packed -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ./Objects -I ../PY32F0xx_Firmware-master/PY32F0xx_Firmware-master/Drivers/PY32F0xx_HAL_Driver/Inc-I./RTE/_Target_1-IC:/Users/Fedor/AppData/Local/Arm/Packs/ARM/CMSIS/6.1.0/CMSIS/Core/Include-IC:/Users/Fedor/AppData/Local/Arm/Packs/Puya/PY32F0xx_DFP/1.2.1/Drivers/CMSIS/Device/PY32F0xx/Include-D__UVISION_VERSION="540" -D_RTE_ -DPY32F002Ax5-o ./objects/py32f0xx_it.o -MMD)
-I (Objects\main.h)(0x66C23D22)
+I (Objects\main.h)(0x66CDB83F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal.h)(0x66A43EA7)
 I (Objects\py32f0xx_hal_conf.h)(0x66A7E59F)
 I (..\PY32F0xx_Firmware-master\PY32F0xx_Firmware-master\Drivers\PY32F0xx_HAL_Driver\Inc\py32f0xx_hal_rcc.h)(0x66A43EA7)

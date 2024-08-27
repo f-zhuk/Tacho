@@ -41,15 +41,22 @@ TIM_HandleTypeDef tim16DisplayHandle;
 /* Private function prototypes -----------------------------------------------*/
 static void APP_SystemClockConfig(void);
 
-const uint8_t Font[30] = {
-        0x1F, 0x1F, 0x1F, 0x1F, 0x1F,            // Code for char  
-        0x1F, 0x1F, 0x02, 0x1F, 0x1F,            // Code for char !
-        0x1F, 0x07, 0x1F, 0x07, 0x1F,            // Code for char "
-        0x15, 0x00, 0x15, 0x00, 0x15,            // Code for char #
-        0x0D, 0x0A, 0x00, 0x0A, 0x16,            // Code for char $
-        0x0C, 0x14, 0x1B, 0x05, 0x06             // Code for char %
-};
+uint8_t buffer[BUFFER_L] = {0};
 
+void display_revolutions(uint16_t revolutions)
+{
+	uint8_t pos = 3;
+	buffer[0] = 'M';
+	buffer[1] = 'P';
+	buffer[2] = 'R';
+	while ((revolutions > 0)&&(pos<BUFFER_L-1))
+	{
+		buffer[pos] = '0'+ revolutions%10;
+		revolutions /= 10;
+		pos++;
+	}
+	buffer[pos] = 0;
+}
 /**
   * @brief  Main program.
   * @retval int
@@ -106,15 +113,15 @@ void timerMeasureInit(void)
 {
 	/* 	Trigger 4x per second, or every 250ms
 			Clock at 24MHz -> 24 million cycles
-			Period to 10,000, prescaler to 800
-			10,000*800=8,000,000 */
+			prescaler set to 24
+			1 count equals 1uS*/
 	TIM_SlaveConfigTypeDef tim1SlaveHandler;
 	TIM_IC_InitTypeDef periodChannelHandler;
 	TIM_IC_InitTypeDef dutyChannelHandler;
 	
 	tim1MeasureHandle.Instance = TIM1;																						//Timer 1 advanced timer
   tim1MeasureHandle.Init.Period            = 50000 - 1;														//Timer count = (period+1)*(prescaler+1)
-  tim1MeasureHandle.Init.Prescaler         = 16 - 1;
+  tim1MeasureHandle.Init.Prescaler         = 24 - 1;
   tim1MeasureHandle.Init.ClockDivision     = TIM_CLOCKDIVISION_DIV1;						//Use full clock rate
   tim1MeasureHandle.Init.CounterMode       = TIM_COUNTERMODE_UP;
   tim1MeasureHandle.Init.RepetitionCounter = 1 - 1;
@@ -146,6 +153,8 @@ void timerMeasureInit(void)
   {
     APP_ErrorHandler();
   }
+	
+	TIM_CCxChannelCmd(tim1MeasureHandle.Instance, TIM_CHANNEL_2, TIM_CCx_ENABLE);
 	
   if (HAL_TIM_IC_Start_IT(&tim1MeasureHandle, TIM_CHANNEL_1) != HAL_OK)
   {
@@ -186,34 +195,46 @@ void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 {
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	//static uint16_t prev_duty = 0;
-	//uint16_t curr_duty = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1)>>3;
-	//if (curr_duty == prev_duty)
-	//{
+	uint16_t curr_period = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1);
+	uint16_t curr_duty = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_2);
+	if ((curr_duty > curr_period>>2)&&(curr_duty < (curr_period>>2)*3))
+	{
+		tim16DisplayHandle.Instance->ARR = (uint32_t)curr_period>>2 ;
+		display_revolutions((uint16_t)(10000000/(curr_period>>1))); //60M microseconds/3 poles/2 for stability
+	//curr_duty = 0xFFFF;
+	
 		if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)  { APP_ErrorHandler(); }
-	//}
+	}
 	//prev_duty = curr_duty;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  static uint16_t counter = 0;
+	static uint8_t sym = 0;
+  static uint16_t col = 0;
 	//HAL_GPIO_WritePin(GPIOA, /*counter*/TachoFont[counter], GPIO_PIN_SET);
 	//counter++;
 	//if( counter > 60) counter = 0;
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);//|GPIO_PIN_2|GPIO_PIN_3);
 	
-	if( counter < 30)
+	if(buffer[sym])
 	{
-		GPIOA->ODR = (GPIOA->ODR&(~0x1F))|TachoFont[counter+96];
+		GPIOA->ODR = (GPIOA->ODR&(~0x1F))|TachoFont[(buffer[sym]-' ')*6+col];
 		//HAL_GPIO_WritePin(GPIOA, 0x1F, GPIO_PIN_RESET);
 		//HAL_GPIO_WritePin(GPIOA, /*counterTacho*/Font[counter], GPIO_PIN_SET);
-		counter++;
+		col++;
+		if (col>5) 
+		{
+			sym++;
+			col = 0;
+		}
 		if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK) { APP_ErrorHandler(); }
 	}
 	else 
 	{
 		GPIOA->ODR |= 0x1F;
-		counter = 0;
+		sym = 0;
+		col = 0;
 	}
 }
 

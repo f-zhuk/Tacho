@@ -41,6 +41,7 @@ extern "C" {
 #include "py32f0xx_hal.h"
 #include "TachoFont.h"
 
+#define BUFFER_L 10
 /* Private includes ----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
 /* Exported variables prototypes ---------------------------------------------*/
