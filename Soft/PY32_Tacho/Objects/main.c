@@ -35,7 +35,10 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef tim1MeasureHandle;
 TIM_HandleTypeDef tim16DisplayHandle;
-//const uint8_t TachoFont[480];
+ADC_HandleTypeDef AdcHandle;
+ADC_ChannelConfTypeDef AdcChanConf;
+
+enum state current_state = rev;
 /* Private user code ---------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +60,80 @@ void display_revolutions(uint16_t revolutions)
 	}
 	buffer[pos] = 0;
 }
+
+void display_minimum(int16_t delta)
+{
+	uint8_t pos = 3;
+	uint8_t sign = '+';
+	
+	if (delta < 0)
+	{
+		sign = '-';
+		delta = -delta;
+	}
+	buffer[0] = 'M';
+	buffer[1] = 'P';
+	buffer[2] = 'R';
+	do
+	{
+		buffer[pos] = '0'+ delta%10;
+		delta /= 10;
+		pos++;
+	}
+	while ((delta != 0)&&(pos<BUFFER_L-2));
+	buffer[pos] = sign;
+	buffer[pos+1] = 0;
+}
+
+void display_temperature(int16_t degrees) //0.1 fixed dot
+{
+	uint8_t pos = 4;
+	uint8_t sign = '+';
+	
+	if (degrees < 0) 
+	{
+		sign = '-';
+		degrees = -degrees;
+	}
+	buffer[0] = 'C';
+	buffer[1] = '`';
+	buffer[2] = '0'+ degrees%10;
+	degrees /= 10;
+	buffer[3] = '.';
+	do
+	{
+		buffer[pos] = '0'+ degrees%10;
+		degrees /= 10;
+		pos++;
+	}
+	while ((degrees != 0)&&(pos<BUFFER_L-2));
+	buffer[pos] = sign;
+	buffer[pos+1] = 0;
+}
+
+void display_voltage(uint16_t millivolts)
+{
+	uint8_t pos = 1;
+	buffer[0] = 'V';
+	while (pos < 4)
+	{
+		buffer[pos] = '0'+ millivolts%10;
+		millivolts /= 10;
+		pos++;
+	}
+	buffer[pos] = '.';
+	pos++;
+	do
+	{
+		buffer[pos] = '0'+ millivolts%10;
+		millivolts /= 10;
+		pos++;
+	}
+	while ((millivolts > 0)&&(pos<BUFFER_L-2));
+	buffer[pos] = '+';
+	buffer[pos+1] = 0;
+}
+
 /**
   * @brief  Main program.
   * @retval int
@@ -70,6 +147,7 @@ int main(void)
   APP_SystemClockConfig(); 
 	
 	gpioInit();
+	ADCInit();
 	timerDisplayInit();
 	timerMeasureInit();
   
@@ -106,6 +184,54 @@ void gpioInit(void)
 
 	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4, GPIO_PIN_SET);
+}
+
+void ADCInit(void)
+{	
+	//Enable Clocks
+	__HAL_RCC_ADC_FORCE_RESET();
+  __HAL_RCC_ADC_RELEASE_RESET();
+	__HAL_RCC_ADC_CLK_ENABLE();
+	
+	//Start calibration
+	AdcHandle.Instance = ADC1;
+	
+	if (HAL_ADCEx_Calibration_Start(&AdcHandle) != HAL_OK)
+	{
+		APP_ErrorHandler();
+	}
+	
+	//Populate ADC init data
+	AdcHandle.Init.ClockPrescaler = ADC_CLOCK_ASYNC_HSI_DIV1; //Full HSI speed
+	AdcHandle.Init.Resolution = ADC_RESOLUTION_12B; //12 bits
+	AdcHandle.Init.DataAlign = ADC_DATAALIGN_RIGHT; //Right aligned
+	AdcHandle.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD; //Don't plan to use
+	AdcHandle.Init.EOCSelection = ADC_EOC_SINGLE_CONV; //single conversion
+	AdcHandle.Init.LowPowerAutoWait = DISABLE; //use all the power
+	AdcHandle.Init.ContinuousConvMode = DISABLE; //don't need for polling
+	AdcHandle.Init.DiscontinuousConvMode = DISABLE; //don't need for polling
+	AdcHandle.Init.ExternalTrigConv = ADC_SOFTWARE_START; //Will start ADC in code
+	AdcHandle.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE; //not going to use external trigger
+	//AdcHandle.Init.DMAContinuousRequests = DISABLE; //Not using DMA
+	AdcHandle.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN; //shouldn't matter for polling
+	AdcHandle.Init.SamplingTimeCommon = ADC_SAMPLETIME_239CYCLES_5; //Setting conversion time to 41.5 cycles
+	
+	//Initialize ADC
+	if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
+	{
+		APP_ErrorHandler();
+	}
+	
+  ADC->CCR |= ADC_CCR_ALL; //Enable both reference and temperature sensor
+	
+	//Now set ADC rank and channel
+	AdcChanConf.Rank = 0; //highest rank, only using one channel
+	AdcChanConf.Channel = ADC_CHANNEL_VREFINT;
+	
+	if (HAL_ADC_ConfigChannel(&AdcHandle, &AdcChanConf) != HAL_OK)
+	{
+		APP_ErrorHandler();
+	}
 }
 
 
@@ -193,14 +319,78 @@ void timerDisplayInit(void)
 
 void HAL_TIM_TriggerCallback(TIM_HandleTypeDef *htim)
 {
-	//HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_0);
-	//static uint16_t prev_duty = 0;
+	static uint16_t delay = 0;
+	static uint16_t minimum = 0;
+	static uint32_t accumulator = 0;
 	uint16_t curr_period = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_1);
 	uint16_t curr_duty = HAL_TIM_ReadCapturedValue(&tim1MeasureHandle, TIM_CHANNEL_2);
 	if ((curr_duty > curr_period>>2)&&(curr_duty < (curr_period>>2)*3))
 	{
 		tim16DisplayHandle.Instance->ARR = (uint32_t)curr_period>>2 ;
-		display_revolutions((uint16_t)(10000000/(curr_period>>1))); //60M microseconds/3 poles/2 for stability
+		if (curr_duty < (curr_period>>4)*6)
+		{
+			current_state = rev;
+			display_revolutions((uint16_t)(10000000/(curr_period>>1))); //60M microseconds/3 poles/2 for stability
+		}
+		else if (curr_duty < (curr_period>>4)*7)
+		{
+			if (current_state != min) 
+			{
+				buffer[0] = 'T';
+				buffer[1] = 'I';
+				buffer[2] = 'A';
+				buffer[3] = 'W';
+				buffer[4] = 0;
+				delay = 0;
+				minimum = 0;
+				accumulator = 0;
+			}
+			current_state = min;
+			if (delay < 255) 
+			{
+				accumulator += curr_period>>1;
+				delay++;
+			}
+			else if (delay < 256) 
+			{
+				accumulator = 10000000*delay/accumulator; //Get average RPM
+				minimum = accumulator; //Start with calculated average
+				delay++;
+			}
+			else
+			{
+				if ((10000000/(curr_period>>1)) < minimum) minimum = (10000000/(curr_period>>1));
+				display_minimum((int16_t)minimum-accumulator);
+			}
+		}
+		else if (curr_duty < (curr_period>>4)*8)
+		{
+			if (current_state != temp) 
+			{
+				AdcChanConf.Channel = ADC_CHANNEL_TEMPSENSOR;
+				if (HAL_ADC_ConfigChannel(&AdcHandle, &AdcChanConf) != HAL_OK) { APP_ErrorHandler(); }
+				HAL_ADC_Start(&AdcHandle);
+				current_state = temp;
+				return;
+			}
+			HAL_ADC_PollForConversion(&AdcHandle, 1000);
+			display_temperature((int16_t)((85.0-30.0)*(HAL_ADC_GetValue(&AdcHandle)-HAL_ADC_TSCAL1)/(HAL_ADC_TSCAL2-HAL_ADC_TSCAL1)+30.0));
+			HAL_ADC_Start(&AdcHandle);
+		}
+		else
+		{
+			if (current_state != volt) 
+			{
+				AdcChanConf.Channel = ADC_CHANNEL_VREFINT;
+				if (HAL_ADC_ConfigChannel(&AdcHandle, &AdcChanConf) != HAL_OK) { APP_ErrorHandler(); }
+				HAL_ADC_Start(&AdcHandle);
+				current_state = volt;
+				return;
+			}
+			HAL_ADC_PollForConversion(&AdcHandle, 1000);
+			display_voltage((uint16_t)(1200*4095/HAL_ADC_GetValue(&AdcHandle)));
+			HAL_ADC_Start(&AdcHandle);
+		}
 	//curr_duty = 0xFFFF;
 	
 		if (HAL_TIM_Base_Start_IT(&tim16DisplayHandle) != HAL_OK)  { APP_ErrorHandler(); }

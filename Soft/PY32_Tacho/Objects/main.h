@@ -44,12 +44,15 @@ extern "C" {
 #define BUFFER_L 10
 /* Private includes ----------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
+enum state { rev, min, temp, volt };
 /* Exported variables prototypes ---------------------------------------------*/
 extern TIM_HandleTypeDef tim1MeasureHandle;
 extern TIM_HandleTypeDef tim16DisplayHandle;
 /* Exported functions prototypes ---------------------------------------------*/
 void APP_ErrorHandler(void);
+void display_revolutions(uint16_t revolutions);
 void gpioInit(void);
+void ADCInit(void);
 void timerMeasureInit(void);
 void timerDisplayInit(void);
 
